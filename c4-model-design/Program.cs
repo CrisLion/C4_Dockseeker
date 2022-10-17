@@ -10,124 +10,96 @@ namespace c4_model_design
             RenderModels();
         }
 
-        static void RenderModels()
+        static void RenderModels() 
         {
-            const long workspaceId = 0;
-            const string apiKey = "";
-            const string apiSecret = "";
+            const long workspaceId = 77511; //Cambiar el workspaceID de acuerdo a su workspace
+            const string apiKey = "9c2d9d62-21d9-4a5e-aac8-e866689e1728"; // cambiar el apiKey de acuerdo a su workspace 
+            const string apiSecret = "aa3f580e-bfbd-420e-a3ba-1763ccd2e29e"; // cambiar el apiSecret de Acuerdo a su workspace
 
             StructurizrClient structurizrClient = new StructurizrClient(apiKey, apiSecret);
 
-            Workspace workspace = new Workspace("Software Design & Patterns - C4 Model - Sistema de Monitoreo", "Sistema de Monitoreo del Traslado Aéreo de Vacunas SARS-CoV-2");
+            Workspace workspace = new Workspace("Grupo 3: MIRAI - Producto: DocSeeker", "Sistema de servicio de atención médica a domicilio");
 
             ViewSet viewSet = workspace.Views;
 
             Model model = workspace.Model;
 
             // 1. Diagrama de Contexto
-            SoftwareSystem monitoringSystem = model.AddSoftwareSystem("Monitoreo del Traslado Aéreo de Vacunas SARS-CoV-2", "Permite el seguimiento y monitoreo del traslado aéreo a nuestro país de las vacunas para la COVID-19.");
-            SoftwareSystem googleMaps = model.AddSoftwareSystem("Google Maps", "Plataforma que ofrece una REST API de información geo referencial.");
-            SoftwareSystem aircraftSystem = model.AddSoftwareSystem("Aircraft System", "Permite transmitir información en tiempo real por el avión del vuelo a nuestro sistema");
+            SoftwareSystem docSeekerSystem = model.AddSoftwareSystem("DocSeeker System", "Allows users to find medical appointments.");
+            SoftwareSystem paymentGatewaySystem = model.AddSoftwareSystem("Payment Gateway System", "Allows the users to make payments.");
+            SoftwareSystem emailSystem = model.AddSoftwareSystem("E-mail System", "The internal Microsoft Exchange e-mail system.");
 
-            Person ciudadano = model.AddPerson("Ciudadano", "Ciudadano peruano.");
-            Person admin = model.AddPerson("Admin", "User Admin.");
+            Person patient = model.AddPerson("DocSeeker Patient", "An app user with a registered account");
+            Person doctor = model.AddPerson("DocSeeker Doctor", "A doctor with a registered account");
 
-            ciudadano.Uses(monitoringSystem, "Realiza consultas para mantenerse al tanto de la planificación de los vuelos hasta la llegada del lote de vacunas al Perú");
-            admin.Uses(monitoringSystem, "Realiza consultas para mantenerse al tanto de la planificación de los vuelos hasta la llegada del lote de vacunas al Perú");
+            patient.Uses(docSeekerSystem, "Search for doctors and book medical appointments using");
+            doctor.Uses(docSeekerSystem, "Search for patients and offer his services");
 
-            monitoringSystem.Uses(aircraftSystem, "Consulta información en tiempo real por el avión del vuelo");
-            monitoringSystem.Uses(googleMaps, "Usa la API de google maps");
+            docSeekerSystem.Uses(paymentGatewaySystem, "Makes payments using");
+            docSeekerSystem.Uses(emailSystem, "Sends e-mail using");
 
             // Tags
-            ciudadano.AddTags("Ciudadano");
-            admin.AddTags("Admin");
-            monitoringSystem.AddTags("SistemaMonitoreo");
-            googleMaps.AddTags("GoogleMaps");
-            aircraftSystem.AddTags("AircraftSystem");
+            patient.AddTags("user");
+            doctor.AddTags("user");
+            docSeekerSystem.AddTags("docSeekerSystem");
+            paymentGatewaySystem.AddTags("paymentGatewaySystem");
+            emailSystem.AddTags("emailSystem");
 
             Styles styles = viewSet.Configuration.Styles;
-            styles.Add(new ElementStyle("Ciudadano") { Background = "#0a60ff", Color = "#ffffff", Shape = Shape.Person });
-            styles.Add(new ElementStyle("Admin") { Background = "#aa60af", Color = "#ffffff", Shape = Shape.Person });
-            styles.Add(new ElementStyle("SistemaMonitoreo") { Background = "#008f39", Color = "#ffffff", Shape = Shape.RoundedBox });
-            styles.Add(new ElementStyle("GoogleMaps") { Background = "#90714c", Color = "#ffffff", Shape = Shape.RoundedBox });
-            styles.Add(new ElementStyle("AircraftSystem") { Background = "#2f95c7", Color = "#ffffff", Shape = Shape.RoundedBox });
-            
-            SystemContextView contextView = viewSet.CreateSystemContextView(monitoringSystem, "Contexto", "Diagrama de contexto");
-            contextView.PaperSize = PaperSize.A4_Landscape;
+            styles.Add(new ElementStyle("user") { Background = "#0a60ff", Color = "#ffffff", Shape = Shape.Person });
+            styles.Add(new ElementStyle("docSeekerSystem") { Background = "#008f39", Color = "#ffffff", Shape = Shape.RoundedBox });
+            styles.Add(new ElementStyle("paymentGatewaySystem") { Background = "#90714c", Color = "#ffffff", Shape = Shape.RoundedBox });
+            styles.Add(new ElementStyle("emailSystem") { Background = "#2f95c7", Color = "#ffffff", Shape = Shape.RoundedBox });
+
+            SystemContextView contextView = viewSet.CreateSystemContextView(docSeekerSystem, "Context", "Context Diagram");
+            contextView.PaperSize = PaperSize.A5_Landscape;
             contextView.AddAllSoftwareSystems();
             contextView.AddAllPeople();
 
             // 2. Diagrama de Contenedores
-            Container mobileApplication = monitoringSystem.AddContainer("Mobile App", "Permite a los usuarios visualizar un dashboard con el resumen de toda la información del traslado de los lotes de vacunas.", "Swift UI");
-            Container webApplication = monitoringSystem.AddContainer("Web App", "Permite a los usuarios visualizar un dashboard con el resumen de toda la información del traslado de los lotes de vacunas.", "React");
-            Container landingPage = monitoringSystem.AddContainer("Landing Page", "", "React");
-            Container apiRest = monitoringSystem.AddContainer("API REST", "API Rest", "NodeJS (NestJS) port 8080");
+            Container mobileApplication = docSeekerSystem.AddContainer("Mobile App", "Permite a los usuarios visualizar un dashboard con el resumen de toda la información del traslado de los lotes de vacunas.", "Swift UI");
+            Container apiRest = docSeekerSystem.AddContainer("API REST", "API Rest", "NodeJS (NestJS) port 8080");
 
-            Container flightPlanningContext = monitoringSystem.AddContainer("Flight Planning Context", "Bounded Context de Planificación de Vuelos", "NodeJS (NestJS)");
-            Container airportContext = monitoringSystem.AddContainer("Airport Context", "Bounded Context de información de Aeropuertos", "NodeJS (NestJS)");
-            Container aircraftInventoryContext = monitoringSystem.AddContainer("Aircraft Inventory Context", "Bounded Context de Inventario de Aviones", "NodeJS (NestJS)");
-            Container vaccinesInventoryContext = monitoringSystem.AddContainer("Vaccines Inventory Context", "Bounded Context de Inventario de Vacunas", "NodeJS (NestJS)");
-            Container monitoringContext = monitoringSystem.AddContainer("Monitoring Context", "Bounded Context de Monitoreo en tiempo real del status y ubicación del vuelo que transporta las vacunas", "NodeJS (NestJS)");
-            Container securityContext = monitoringSystem.AddContainer("Security Context", "Bounded Context de Seguridad", "NodeJS (NestJS)");
+            Container monitoringContext = docSeekerSystem.AddContainer("Monitoring Context", "Bounded Context of Real-time monitoring of the payment process and notifications.", "NodeJS (NestJS)");
+            Container securityContext = docSeekerSystem.AddContainer("Security Context", "Bounded Context de Seguridad", "NodeJS (NestJS)");
 
-            Container database = monitoringSystem.AddContainer("Database", "", "Oracle");
-            
-            ciudadano.Uses(mobileApplication, "Consulta");
-            ciudadano.Uses(webApplication, "Consulta");
-            ciudadano.Uses(landingPage, "Consulta");
+            Container database = docSeekerSystem.AddContainer("Database", "", "Oracle");
 
-            admin.Uses(mobileApplication, "Consulta");
-            admin.Uses(webApplication, "Consulta");
-            admin.Uses(landingPage, "Consulta");
+            patient.Uses(mobileApplication, "Query");
+            doctor.Uses(mobileApplication, "Query");
 
             mobileApplication.Uses(apiRest, "API Request", "JSON/HTTPS");
-            webApplication.Uses(apiRest, "API Request", "JSON/HTTPS");
 
-            apiRest.Uses(flightPlanningContext, "", "");
-            apiRest.Uses(airportContext, "", "");
-            apiRest.Uses(aircraftInventoryContext, "", "");
-            apiRest.Uses(vaccinesInventoryContext, "", "");
             apiRest.Uses(monitoringContext, "", "");
             apiRest.Uses(securityContext, "", "");
 
-            flightPlanningContext.Uses(database, "", "");
-            airportContext.Uses(database, "", "");
-            aircraftInventoryContext.Uses(database, "", "");
-            vaccinesInventoryContext.Uses(database, "", "");
             monitoringContext.Uses(database, "", "");
             securityContext.Uses(database, "", "");
 
-            monitoringContext.Uses(googleMaps, "API Request", "JSON/HTTPS");
-            monitoringContext.Uses(aircraftSystem, "API Request", "JSON/HTTPS");
+            monitoringContext.Uses(paymentGatewaySystem, "API Request", "JSON/HTTPS");
+            monitoringContext.Uses(emailSystem, "API Request", "JSON/HTTPS");
 
             // Tags
             mobileApplication.AddTags("MobileApp");
-            webApplication.AddTags("WebApp");
-            landingPage.AddTags("LandingPage");
             apiRest.AddTags("APIRest");
             database.AddTags("Database");
 
             string contextTag = "Context";
 
-            flightPlanningContext.AddTags(contextTag);
-            airportContext.AddTags(contextTag);
-            aircraftInventoryContext.AddTags(contextTag);
-            vaccinesInventoryContext.AddTags(contextTag);
             monitoringContext.AddTags(contextTag);
             securityContext.AddTags(contextTag);
 
             styles.Add(new ElementStyle("MobileApp") { Background = "#9d33d6", Color = "#ffffff", Shape = Shape.MobileDevicePortrait, Icon = "" });
-            styles.Add(new ElementStyle("WebApp") { Background = "#9d33d6", Color = "#ffffff", Shape = Shape.WebBrowser, Icon = "" });
-            styles.Add(new ElementStyle("LandingPage") { Background = "#929000", Color = "#ffffff", Shape = Shape.WebBrowser, Icon = "" });
             styles.Add(new ElementStyle("APIRest") { Shape = Shape.RoundedBox, Background = "#0000ff", Color = "#ffffff", Icon = "" });
             styles.Add(new ElementStyle("Database") { Shape = Shape.Cylinder, Background = "#ff0000", Color = "#ffffff", Icon = "" });
             styles.Add(new ElementStyle(contextTag) { Shape = Shape.Hexagon, Background = "#facc2e", Icon = "" });
 
-            ContainerView containerView = viewSet.CreateContainerView(monitoringSystem, "Contenedor", "Diagrama de contenedores");
+            ContainerView containerView = viewSet.CreateContainerView(docSeekerSystem, "Container", "Container Diagrams");
             contextView.PaperSize = PaperSize.A4_Landscape;
             containerView.AddAllElements();
 
             // 3. Diagrama de Componentes (Monitoring Context)
+            /*
             Component domainLayer = monitoringContext.AddComponent("Domain Layer", "", "NodeJS (NestJS)");
 
             Component monitoringController = monitoringContext.AddComponent("MonitoringController", "REST API endpoints de monitoreo.", "NodeJS (NestJS) REST Controller");
@@ -185,7 +157,7 @@ namespace c4_model_design
             componentView.Add(aircraftSystem);
             componentView.Add(googleMaps);
             componentView.AddAllComponents();
-
+            */
             structurizrClient.UnlockWorkspace(workspaceId);
             structurizrClient.PutWorkspace(workspaceId, workspace);
         }
