@@ -1,4 +1,4 @@
-﻿using Structurizr;
+using Structurizr;
 using Structurizr.Api;
 
 namespace c4_model_design
@@ -12,9 +12,9 @@ namespace c4_model_design
 
         static void RenderModels() 
         {
-            const long workspaceId = 77511; //Cambiar el workspaceID de acuerdo a su workspace
-            const string apiKey = "9c2d9d62-21d9-4a5e-aac8-e866689e1728"; // cambiar el apiKey de acuerdo a su workspace 
-            const string apiSecret = "aa3f580e-bfbd-420e-a3ba-1763ccd2e29e"; // cambiar el apiSecret de Acuerdo a su workspace
+            const long workspaceId = 77519; //Cambiar el workspaceID de acuerdo a su workspace
+            const string apiKey = "bd0369ef-d063-4618-8d7b-54b9c66ef40c"; // cambiar el apiKey de acuerdo a su workspace 
+            const string apiSecret = "c9346fe9-95cb-48ad-b843-03bc219ee88b"; // cambiar el apiSecret de Acuerdo a su workspace
 
             StructurizrClient structurizrClient = new StructurizrClient(apiKey, apiSecret);
 
@@ -98,66 +98,78 @@ namespace c4_model_design
             contextView.PaperSize = PaperSize.A4_Landscape;
             containerView.AddAllElements();
 
-            // 3. Diagrama de Componentes (Monitoring Context)
-            /*
-            Component domainLayer = monitoringContext.AddComponent("Domain Layer", "", "NodeJS (NestJS)");
-
-            Component monitoringController = monitoringContext.AddComponent("MonitoringController", "REST API endpoints de monitoreo.", "NodeJS (NestJS) REST Controller");
-
-            Component monitoringApplicationService = monitoringContext.AddComponent("MonitoringApplicationService", "Provee métodos para el monitoreo, pertenece a la capa Application de DDD", "NestJS Component");
-
-            Component flightRepository = monitoringContext.AddComponent("FlightRepository", "Información del vuelo", "NestJS Component");
-            Component vaccineLoteRepository = monitoringContext.AddComponent("VaccineLoteRepository", "Información de lote de vacunas", "NestJS Component");
-            Component locationRepository = monitoringContext.AddComponent("LocationRepository", "Ubicación del vuelo", "NestJS Component");
-
-            Component aircraftSystemFacade = monitoringContext.AddComponent("Aircraft System Facade", "", "NestJS Component");
-
-            apiRest.Uses(monitoringController, "", "JSON/HTTPS");
-            monitoringController.Uses(monitoringApplicationService, "Invoca métodos de monitoreo");
-
-            monitoringApplicationService.Uses(domainLayer, "Usa", "");
-            monitoringApplicationService.Uses(aircraftSystemFacade, "Usa");
-            monitoringApplicationService.Uses(flightRepository, "", "");
-            monitoringApplicationService.Uses(vaccineLoteRepository, "", "");
-            monitoringApplicationService.Uses(locationRepository, "", "");
-
-            flightRepository.Uses(database, "", "");
-            vaccineLoteRepository.Uses(database, "", "");
-            locationRepository.Uses(database, "", "");
-
-            locationRepository.Uses(googleMaps, "", "JSON/HTTPS");
-
-            aircraftSystemFacade.Uses(aircraftSystem, "JSON/HTTPS");
+            // 3. Diagrama de Componentes (Security Context)
             
-            // Tags
-            domainLayer.AddTags("DomainLayer");
-            monitoringController.AddTags("MonitoringController");
-            monitoringApplicationService.AddTags("MonitoringApplicationService");
-            flightRepository.AddTags("FlightRepository");
-            vaccineLoteRepository.AddTags("VaccineLoteRepository");
-            locationRepository.AddTags("LocationRepository");
-            aircraftSystemFacade.AddTags("AircraftSystemFacade");
-            
-            styles.Add(new ElementStyle("DomainLayer") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("MonitoringController") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("MonitoringApplicationService") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("MonitoringDomainModel") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("FlightStatus") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("FlightRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("VaccineLoteRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("LocationRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-            styles.Add(new ElementStyle("AircraftSystemFacade") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            Component signInController = securityContext.AddComponent("Sign In Controller", "Permite al usuario acceder a su cuenta personal.", "NodeJS (NestJS)");
+            Component securityComponent = securityContext.AddComponent("Security Component", "Funcionalidad de seguridad para Sign In y contraseñas.", "NodeJS (NestJS)");
 
-            ComponentView componentView = viewSet.CreateComponentView(monitoringContext, "Components", "Component Diagram");
+            apiRest.Uses(signInController, "");
+            apiRest.Uses(apiRest, "");
+            signInController.Uses(securityComponent, "");
+            securityComponent.Uses(database, "");
+
+            //Tags
+            signInController.AddTags("SignInController");
+            securityComponent.AddTags("SecurityComponent");
+
+            styles.Add(new ElementStyle("SignInController") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("SecurityComponent") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+
+            ComponentView componentView = viewSet.CreateComponentView(securityContext, "Component", "Component Diagrams");
             componentView.PaperSize = PaperSize.A4_Landscape;
-            componentView.Add(mobileApplication);
-            componentView.Add(webApplication);
             componentView.Add(apiRest);
+            componentView.Add(signInController);
+            componentView.Add(securityComponent);
             componentView.Add(database);
-            componentView.Add(aircraftSystem);
-            componentView.Add(googleMaps);
-            componentView.AddAllComponents();
-            */
+
+            
+
+            // 4. Diagrama de Componentes (Monitoring Context)
+            Component monitoringController = monitoringContext.AddComponent("Monitoring Controller");
+            Component emailNotification = monitoringContext.AddComponent("E-mail Notification");
+            Component doctorRepository = monitoringContext.AddComponent("Doctor Repository");
+            Component patientRepository = monitoringContext.AddComponent("Patient Repository");
+            Component appointmentRepository = monitoringContext.AddComponent("Appointment Repository");
+            Component paymentFacade = monitoringContext.AddComponent("Payment System Facade");
+
+            apiRest.Uses(monitoringController, "Uses");
+            apiRest.Uses(paymentFacade, "");
+            apiRest.Uses(emailNotification, "");
+
+            monitoringController.Uses(patientRepository, "");
+            monitoringController.Uses(doctorRepository, "");
+            monitoringController.Uses(appointmentRepository, "");
+
+            paymentFacade.Uses(paymentGatewaySystem, "");
+            emailNotification.Uses(emailSystem, "");
+
+            patientRepository.Uses(database, "");
+            doctorRepository.Uses(database, "");
+            appointmentRepository.Uses(database, "");
+
+            //Tags
+            emailNotification.AddTags("EmailNotification");
+            doctorRepository.AddTags("DoctorRepository");
+            monitoringController.AddTags("MonitoringController");
+            patientRepository.AddTags("PatientRepository");
+            appointmentRepository.AddTags("AppointmentRepository");
+            paymentFacade.AddTags("PaymentFacade");
+
+            styles.Add(new ElementStyle("EmailNotification") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("DoctorRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("MonitoringController") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("PatientRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("AppointmentRepository") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+            styles.Add(new ElementStyle("PaymentFacade") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
+
+            ComponentView componentViewB = viewSet.CreateComponentView(monitoringContext, "Components", "Component Diagram");
+            componentViewB.PaperSize = PaperSize.A4_Landscape;
+            componentViewB.AddAllComponents();
+            componentViewB.Add(apiRest);
+            componentViewB.Add(database);
+            componentViewB.Add(emailSystem);
+            componentViewB.Add(paymentGatewaySystem);
+
             structurizrClient.UnlockWorkspace(workspaceId);
             structurizrClient.PutWorkspace(workspaceId, workspace);
         }
