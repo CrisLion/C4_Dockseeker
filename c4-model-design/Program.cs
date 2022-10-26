@@ -12,9 +12,9 @@ namespace c4_model_design
 
         static void RenderModels() 
         {
-            const long workspaceId = 77519; //Cambiar el workspaceID de acuerdo a su workspace
-            const string apiKey = "bd0369ef-d063-4618-8d7b-54b9c66ef40c"; // cambiar el apiKey de acuerdo a su workspace 
-            const string apiSecret = "c9346fe9-95cb-48ad-b843-03bc219ee88b"; // cambiar el apiSecret de Acuerdo a su workspace
+            const long workspaceId = 77509; //Cambiar el workspaceID de acuerdo a su workspace
+            const string apiKey = "dc12db74-80e1-4ef7-b303-3eb2e4894a63"; // cambiar el apiKey de acuerdo a su workspace 
+            const string apiSecret = "54b717ba-4040-4d8b-a77d-769f812d86c6"; // cambiar el apiSecret de Acuerdo a su workspace
 
             StructurizrClient structurizrClient = new StructurizrClient(apiKey, apiSecret);
 
@@ -31,9 +31,11 @@ namespace c4_model_design
 
             Person patient = model.AddPerson("DocSeeker Patient", "An app user with a registered account");
             Person doctor = model.AddPerson("DocSeeker Doctor", "A doctor with a registered account");
+            Person admin = model.AddPerson("DocSeeker Admin", "An app user with master functions");
 
             patient.Uses(docSeekerSystem, "Search for doctors and book medical appointments using");
             doctor.Uses(docSeekerSystem, "Search for patients and offer his services");
+            admin.Uses(docSeekerSystem, "Moderate the behavior of the users");
 
             docSeekerSystem.Uses(paymentGatewaySystem, "Makes payments using");
             docSeekerSystem.Uses(emailSystem, "Sends e-mail using");
@@ -41,6 +43,7 @@ namespace c4_model_design
             // Tags
             patient.AddTags("user");
             doctor.AddTags("user");
+            admin.AddTags("user");
             docSeekerSystem.AddTags("docSeekerSystem");
             paymentGatewaySystem.AddTags("paymentGatewaySystem");
             emailSystem.AddTags("emailSystem");
@@ -67,6 +70,7 @@ namespace c4_model_design
 
             patient.Uses(mobileApplication, "Query");
             doctor.Uses(mobileApplication, "Query");
+            admin.Uses(mobileApplication, "Query");
 
             mobileApplication.Uses(apiRest, "API Request", "JSON/HTTPS");
 
