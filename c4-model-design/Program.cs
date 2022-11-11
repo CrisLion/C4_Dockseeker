@@ -10,11 +10,11 @@ namespace c4_model_design
             RenderModels();
         }
 
-        static void RenderModels() 
+        static void RenderModels()
         {
-            const long workspaceId = 77509; //Cambiar el workspaceID de acuerdo a su workspace
-            const string apiKey = "dc12db74-80e1-4ef7-b303-3eb2e4894a63"; // cambiar el apiKey de acuerdo a su workspace 
-            const string apiSecret = "54b717ba-4040-4d8b-a77d-769f812d86c6"; // cambiar el apiSecret de Acuerdo a su workspace
+            const long workspaceId = 78274; //Cambiar el workspaceID de acuerdo a su workspace
+            const string apiKey = "4e2b098f-e00d-42ea-8ad2-8481623f5f66"; // cambiar el apiKey de acuerdo a su workspace 
+            const string apiSecret = "be9a8c8f-33e4-4cf1-ab6e-ed62eecba623"; // cambiar el apiSecret de Acuerdo a su workspace
 
             StructurizrClient structurizrClient = new StructurizrClient(apiKey, apiSecret);
 
@@ -31,11 +31,9 @@ namespace c4_model_design
 
             Person patient = model.AddPerson("DocSeeker Patient", "An app user with a registered account");
             Person doctor = model.AddPerson("DocSeeker Doctor", "A doctor with a registered account");
-            Person admin = model.AddPerson("DocSeeker Admin", "An app user with master functions");
 
             patient.Uses(docSeekerSystem, "Search for doctors and book medical appointments using");
             doctor.Uses(docSeekerSystem, "Search for patients and offer his services");
-            admin.Uses(docSeekerSystem, "Moderate the behavior of the users");
 
             docSeekerSystem.Uses(paymentGatewaySystem, "Makes payments using");
             docSeekerSystem.Uses(emailSystem, "Sends e-mail using");
@@ -43,7 +41,6 @@ namespace c4_model_design
             // Tags
             patient.AddTags("user");
             doctor.AddTags("user");
-            admin.AddTags("user");
             docSeekerSystem.AddTags("docSeekerSystem");
             paymentGatewaySystem.AddTags("paymentGatewaySystem");
             emailSystem.AddTags("emailSystem");
@@ -66,27 +63,29 @@ namespace c4_model_design
 
             //Modulos
             Container reviewContext = docSeekerSystem.AddContainer("Review Context", "Bounded Context of Real-time monitoring of the payment process and notifications.", "NodeJS (NestJS)");
-            Container securityContext = docSeekerSystem.AddContainer("Security Context", "Bounded Context de Seguridad", "NodeJS (NestJS)");
-            Container notificationContext = docSeekerSystem.AddContainer("Notification Context", "Bounded Context de Notrificaciones", "NodeJS (NestJS)");
+            Container registerContext = docSeekerSystem.AddContainer("Register Context", "Bounded Context de creación de una nueva cuenta de usuario", "NodeJS (NestJS)");
+            Container logInContext = docSeekerSystem.AddContainer("Log in Context", "Bounded Context de inicio de sesión por parte del usuario", "NodeJS (NestJS)");
+            Container notificationContext = docSeekerSystem.AddContainer("Notification Context", "Bounded Context de Notificaciones", "NodeJS (NestJS)");
             Container PaymentContext = docSeekerSystem.AddContainer("Payment Context", "Payment Context de pagos", "NodeJS (NestJS)");
             Container AppointmentContext = docSeekerSystem.AddContainer("Appointment Context", "Appointment Context de citas", "NodeJS (NestJS)");
             Container PrescriptionContext = docSeekerSystem.AddContainer("Prescription Context", "Prescription Context", "NodeJS (NestJS)");
 
             patient.Uses(mobileApplication, "Query");
             doctor.Uses(mobileApplication, "Query");
-            admin.Uses(mobileApplication, "Query");
 
             mobileApplication.Uses(apiRest, "API Request", "JSON/HTTPS");
 
             apiRest.Uses(reviewContext, "", "");
-            apiRest.Uses(securityContext, "", "");
+            apiRest.Uses(registerContext, "", "");
+            apiRest.Uses(logInContext, "", "");
             apiRest.Uses(notificationContext, "", "");
             apiRest.Uses(PaymentContext, "", "");
             apiRest.Uses(AppointmentContext, "", "");
             apiRest.Uses(PrescriptionContext, "", "");
 
             reviewContext.Uses(database, "", "");
-            securityContext.Uses(database, "", "");
+            registerContext.Uses(database, "", "");
+            logInContext.Uses(database, "", "");
             notificationContext.Uses(database, "", "");
             PaymentContext.Uses(database, "", "");
             AppointmentContext.Uses(database, "", "");
@@ -94,6 +93,7 @@ namespace c4_model_design
 
             PaymentContext.Uses(paymentGatewaySystem, "API Request", "JSON/HTTPS");
             notificationContext.Uses(emailSystem, "API Request", "JSON/HTTPS");
+            registerContext.Uses(emailSystem, "API Request", "JSON/HTTPS");
 
             // Tags
             mobileApplication.AddTags("MobileApp");
@@ -103,7 +103,8 @@ namespace c4_model_design
             string contextTag = "Context";
 
             reviewContext.AddTags(contextTag);
-            securityContext.AddTags(contextTag);
+            registerContext.AddTags(contextTag);
+            logInContext.AddTags(contextTag);
             notificationContext.AddTags(contextTag);
             PaymentContext.AddTags(contextTag);
             AppointmentContext.AddTags(contextTag);
@@ -118,28 +119,63 @@ namespace c4_model_design
             contextView.PaperSize = PaperSize.A4_Landscape;
             containerView.AddAllElements();
 
-            // 3. Diagrama de Componentes (Security Context)
+            // 3. Diagrama de componentes
 
-            Component signInController = securityContext.AddComponent("Sign In Controller", "Permite al usuario acceder a su cuenta personal.", "NodeJS (NestJS)");
-            Component securityComponent = securityContext.AddComponent("Security Component", "Funcionalidad de seguridad para Sign In y contraseñas.", "NodeJS (NestJS)");
-            Component userVerifyComponent = securityContext.AddComponent("User Verify Repository", "Verifica la información en el repositorio de cuentas de la base de datos.", "NodeJS (NestJS)");
+            string componentTag = "component";
+            styles.Add(new ElementStyle("component") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
 
-            apiRest.Uses(signInController, "");
-            signInController.Uses(securityComponent, "uses");
-            securityComponent.Uses(userVerifyComponent, "reads from");
+
+
+            // 3.1. Registration context
+
+            Component registerController = registerContext.AddComponent("Register Controller", "Controla el registro de nuevos usuarios.", "NodeJS (NestJS)");
+            Component registerVerification = registerContext.AddComponent("Register Verification", "Verifica la información ingresada por el usuario es correcta.", "NodeJS (NestJS)");
+            Component registerRepository = registerContext.AddComponent("Register Repository", "Información sobre el nuevo usuario.", "NodeJS (NestJS)");
+            Component emailConfirmation = registerContext.AddComponent("Email Confirmation", "Envía email de confirmación tras haber creado una nueva cuenta.", "NodeJS (NestJS)");
+
+            apiRest.Uses(registerController, "API calls");
+
+            registerController.Uses(registerVerification, "uses");
+            registerController.Uses(emailConfirmation, "uses");
+
+            registerVerification.Uses(emailSystem, "uses");
+            registerVerification.Uses(registerRepository, "uses");
+
+            emailConfirmation.Uses(emailSystem, "uses");
+
+            registerRepository.Uses(database, "uses");
+
+            //Tags
+
+            registerController.AddTags(componentTag);
+            registerVerification.AddTags(componentTag);
+            registerRepository.AddTags(componentTag);
+            emailConfirmation.AddTags(componentTag);
+
+
+            ComponentView componentView3_1 = viewSet.CreateComponentView(registerContext, "Registration Component", "Component Diagrams");
+            componentView3_1.PaperSize = PaperSize.A4_Landscape;
+            componentView3_1.AddAllComponents();
+            componentView3_1.Add(apiRest);
+            componentView3_1.Add(database);
+            componentView3_1.Add(emailSystem);
+
+            // 3.2 Log in Context
+
+            Component signInController = logInContext.AddComponent("Sign In Controller", "Permite al usuario acceder a su cuenta personal.", "NodeJS (NestJS)");
+            Component userVerifyComponent = logInContext.AddComponent("Users Repository", "Información sobre el usuario.", "NodeJS (NestJS)");
+
+            apiRest.Uses(signInController, "API calls");
+            signInController.Uses(userVerifyComponent, "reads from");
             userVerifyComponent.Uses(database, "");
 
             //Tags
 
-            string componentTag = "component";
-
             signInController.AddTags(componentTag);
-            securityComponent.AddTags(componentTag);
             userVerifyComponent.AddTags(componentTag);
 
-            styles.Add(new ElementStyle("component") { Shape = Shape.Component, Background = "#facc2e", Icon = "" });
-           
-            ComponentView componentView = viewSet.CreateComponentView(securityContext, "Security Component", "Component Diagrams");
+
+            ComponentView componentView = viewSet.CreateComponentView(logInContext, "Security Component", "Component Diagrams");
             componentView.PaperSize = PaperSize.A4_Landscape;
             componentView.Add(apiRest);
             componentView.AddAllComponents();
@@ -169,7 +205,7 @@ namespace c4_model_design
             ComponentView componentViewB = viewSet.CreateComponentView(notificationContext, "Notification Components", "Component Diagram");
             componentViewB.PaperSize = PaperSize.A4_Landscape;
             componentViewB.AddAllComponents();
-            componentViewB.Add(apiRest);            
+            componentViewB.Add(apiRest);
             componentViewB.Add(database);
             componentViewB.Add(emailSystem);
 
@@ -229,9 +265,9 @@ namespace c4_model_design
             Component therapyRepository = PrescriptionContext.AddComponent("Therapy Repository", "Información sobre las terapias recomendadas.", "NodeJS (NestJS)");
 
             apiRest.Uses(prescriptionController, "");
-            prescriptionController.Uses(diagnosisRepository,"reads and writes");
-            prescriptionController.Uses(medicineRepository,"reads and writes");
-            prescriptionController.Uses(therapyRepository,"reads and writes");
+            prescriptionController.Uses(diagnosisRepository, "reads and writes");
+            prescriptionController.Uses(medicineRepository, "reads and writes");
+            prescriptionController.Uses(therapyRepository, "reads and writes");
             diagnosisRepository.Uses(database, "");
             medicineRepository.Uses(database, "");
             therapyRepository.Uses(database, "");
@@ -241,7 +277,7 @@ namespace c4_model_design
             diagnosisRepository.AddTags(componentTag);
             therapyRepository.AddTags(componentTag);
             medicineRepository.AddTags(componentTag);
-            
+
             ComponentView componentViewE = viewSet.CreateComponentView(PrescriptionContext, "Prescription Components", "Components Diagram");
             componentViewE.PaperSize = PaperSize.A4_Landscape;
             componentViewE.AddAllComponents();
@@ -254,10 +290,10 @@ namespace c4_model_design
             Component addReviewComponent = reviewContext.AddComponent("Add Review Component", "Funcionalidad para agregar nuevas reseñas", "NodeJS (NestJS)");
 
             apiRest.Uses(reviewController, "");
-            reviewController.Uses(reviewRepository,"reads from");
+            reviewController.Uses(reviewRepository, "reads from");
             reviewController.Uses(addReviewComponent, "");
             addReviewComponent.Uses(reviewRepository, "writes");
-            reviewRepository.Uses(database,"");
+            reviewRepository.Uses(database, "");
 
             //Tags
             reviewController.AddTags(componentTag);
